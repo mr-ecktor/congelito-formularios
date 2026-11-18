@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Inspeção Freezers Congelito</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--roxo:#4d2986;--verde:#a9d920;--rosa:#e31a97;--fundo:#f4f1fa;--borda:#d9d0ea;--txt:#1f1630;--turq:#3fb8c3;--erro:#d62828;--ok:#1f9d55}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:18px}
+header{background:var(--turq);border-bottom:5px solid var(--verde);padding:14px 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:5}
+header img{height:42px}
+header h1{font-size:19px;margin:0;color:#fff;text-shadow:0 1px 2px #0003}
+.logoBox{background:#fff;border-radius:10px;padding:5px 8px;display:flex}
+#gelito{height:56px;width:56px;border-radius:50%;border:3px solid #fff;object-fit:cover}
+header .prog{margin-left:auto;font-size:14px;color:#fff;font-weight:600;text-align:right}
+main{max-width:820px;margin:0 auto;padding:16px}
+section{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:16px;margin-bottom:16px}
+section h2{margin:0 0 12px;font-size:18px;color:var(--roxo)}
+label.campo{display:block;font-weight:600;margin:14px 0 6px}
+input[type=text],input[type=number],select{width:100%;font-size:18px;padding:12px;border:2px solid var(--borda);border-radius:10px;background:#fff}
+input:focus,select:focus{outline:none;border-color:var(--roxo)}
+.info{font-size:15px;color:#5b5070;margin-top:4px}
+.ops{display:flex;flex-wrap:wrap;gap:8px}
+.ops label{flex:1 1 140px}
+.ops input{display:none}
+.ops span{display:block;text-align:center;padding:12px 8px;border:2px solid var(--borda);border-radius:10px;cursor:pointer;user-select:none;font-size:16px}
+.ops input:checked+span{background:var(--roxo);border-color:var(--roxo);color:#fff;font-weight:600}
+.ops input.ruim:checked+span{background:var(--erro);border-color:var(--erro)}
+.temp{display:flex;align-items:center;gap:10px}
+.temp input{max-width:160px;font-size:24px;font-weight:700}
+.temp.alerta input{border-color:var(--erro);color:var(--erro)}
+#tempMsg{font-weight:600}
+.fotos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.foto{border:2px dashed var(--borda);border-radius:12px;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;text-align:center;font-size:15px;color:#5b5070;padding:6px}
+.foto img{max-width:100%;max-height:220px;border-radius:8px}
+.foto input{display:none}
+#assin{width:100%;height:200px;border:2px solid var(--borda);border-radius:10px;touch-action:none;background:#fff}
+.linha{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+button{font-size:18px;padding:14px 18px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
+.sec{background:#eee;color:var(--txt)}
+.pri{background:var(--roxo);color:#fff;width:100%;padding:18px;font-size:20px}
+.zap{background:#25d366;color:#fff;width:100%;padding:18px;font-size:20px;margin-top:10px}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:16px}
+.chk input{width:26px;height:26px;flex:none}
+#gpsBox{font-size:15px;padding:10px;border-radius:10px;background:var(--fundo);margin-top:8px}
+.longe{color:var(--erro);font-weight:600}
+#hist ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px}
+#hist li{font-size:13px;padding:6px 10px;border-radius:20px;background:var(--fundo);border:1px solid var(--borda)}
+#hist li.feito{background:#e8f6d0;border-color:var(--verde)}
+#hist li.feito.ruim{background:#fde2e2;border-color:var(--erro)}
+#erros{color:var(--erro);font-weight:600;margin-bottom:10px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--borda)}
+.item:last-child{border-bottom:0}
+.item .nome{font-weight:600;flex:1}
+.item .ops{flex:0 0 58%;flex-wrap:nowrap}
+.item .ops label{flex:1 1 0}
+.ops input.bom:checked+span{background:var(--ok);border-color:var(--ok)}
+.ops input.reg:checked+span{background:#e08a00;border-color:#e08a00}
+@media (max-width:620px){.item{flex-direction:column;align-items:stretch}.item .ops{flex-basis:auto}}
+.abas{display:flex;gap:8px;max-width:820px;margin:14px auto 0;padding:0 16px}
+.abas a{flex:1;text-align:center;padding:14px 6px;border-radius:12px;background:#fff;border:2px solid var(--borda);color:var(--roxo);font-weight:700;text-decoration:none;font-size:16px}
+.abas a.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+details summary{cursor:pointer;font-weight:700;color:var(--roxo)}
+@media (max-width:520px){.fotos{grid-template-columns:1fr}header h1{font-size:16px}}
+</style>
+</head>
+<body>
+<header>
+  <img id="gelito" alt="Gelito"><span class="logoBox"><img id="logo" alt="Congelito"></span>
+  <h1>Vistoria de freezer</h1>
+  <div class="prog" id="prog"></div>
+</header>
+<nav class="abas"><a href="inspecao.html" data-m="vistoria">🔍 Vistoria</a><a href="entrega.html#freezer" data-m="freezer">🧊 Entrega de freezer</a><a href="entrega.html#produtos" data-m="produtos">📦 Entrega de produtos</a></nav>
+<main>
+
+<section id="hist">
+  <details><summary>Lojas visitadas neste mês</summary><ul id="histLista" style="margin-top:10px"></ul>
+  <p class="info">Verde = inspecionada · Vermelho = com problema. O histórico fica salvo só neste tablet.</p>
+  <button class="sec" type="button" id="zerar" style="font-size:14px;padding:8px 14px">Zerar histórico</button></details>
+</section>
+
+<section>
+  <h2>1. Identificação</h2>
+  <div class="info">Data e hora: <b id="agora"></b></div>
+  <label class="campo" for="loja">Loja</label>
+  <select id="loja"></select>
+  <div class="info" id="endereco"></div>
+  <div id="novaBox" style="display:none">
+    <label class="campo" for="novaNome">Nome da nova loja</label>
+    <input type="text" id="novaNome" placeholder="Nome da loja">
+    <label class="campo" for="novaEnd">Endereço</label>
+    <input type="text" id="novaEnd" placeholder="Endereço (opcional)">
+  </div>
+  <label class="campo" for="inspetor">Responsável pela inspeção</label>
+  <input type="text" id="inspetor" placeholder="Seu nome" autocomplete="name">
+</section>
+
+<section>
+  <h2>2. Checklist do freezer</h2>
+  <div id="lista"></div>
+  <div class="item"><span class="nome">Quantidade de produtos dentro do freezer</span><input type="number" id="qtd" inputmode="numeric" min="0" placeholder="Ex.: 40" style="max-width:180px;text-align:center;font-size:22px;font-weight:700"></div>
+</section>
+
+<section>
+  <h2>3. Fotos</h2>
+  <div class="fotos">
+    <label class="foto" id="fFora"><input type="file" accept="image/*" capture="environment" data-k="fora"><span>📷 Toque para fotografar<br><b>Freezer por fora</b></span></label>
+    <label class="foto" id="fDentro"><input type="file" accept="image/*" capture="environment" data-k="dentro"><span>📷 Toque para fotografar<br><b>Freezer por dentro</b></span></label>
+  </div>
+</section>
+
+<section>
+  <h2>4. Observações</h2>
+  <input type="text" id="obs" maxlength="140" placeholder="Opcional (1 linha)">
+</section>
+
+<section>
+  <h2>5. Responsável da loja</h2>
+  <label class="campo" for="respNome">Nome do responsável</label>
+  <input type="text" id="respNome" placeholder="Nome completo">
+  <label class="campo">Assinatura</label>
+  <canvas id="assin"></canvas>
+  <div class="linha"><span class="info">Assine com o dedo</span><button class="sec" type="button" id="limpar">Limpar</button></div>
+  <label class="chk"><input type="checkbox" id="ciencia"><span>Declaro que acompanhei a inspeção e confirmo as informações acima.</span></label>
+</section>
+
+<div id="erros"></div>
+<button class="pri" id="gerar" type="button">Gerar PDF e enviar no WhatsApp</button>
+<button class="sec" id="nova" type="button" style="width:100%;margin-top:10px">Nova inspeção (limpar tudo)</button>
+<p class="info" style="text-align:center;margin:20px 0 40px">Congelito Food Ltda · CNPJ 56.878.797/0001-89</p>
+</main>
+
+<script>
+const PONTOS = [
+ {
+  "id": "aguas-claras",
+  "nome": "Fonte de Vida Águas Claras",
+  "grupo": "fdv",
+  "end": "Av. Pau Brasil/Araucárias, Rua 22 (próximo ao Águas Claras Shopping) - Águas Claras",
+  "lat": -15.8414251,
+  "lng": -48.0271507,
+  "horario": "seg–sex 09:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/aguas-claras/"
+ },
+ {
+  "id": "asa-sul",
+  "nome": "Fonte de Vida Asa Sul",
+  "grupo": "fdv",
+  "end": "CLS 407 Bloco D Loja 08 - Asa Sul",
+  "lat": -15.8192541,
+  "lng": -47.8951434,
+  "horario": "seg–sex 09:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/asa-sul/"
+ },
+ {
+  "id": "asa-norte",
+  "nome": "Fonte de Vida Asa Norte",
+  "grupo": "fdv",
+  "end": "Comércio Local Norte 308 Bloco D Loja 15 - Asa Norte",
+  "lat": -15.762758,
+  "lng": -47.8893857,
+  "horario": "seg–sex 09:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/asa-norte-2/"
+ },
+ {
+  "id": "ceilandia",
+  "nome": "Fonte de Vida Ceilândia",
+  "grupo": "fdv",
+  "end": "St. M QNM 17 Ed. Pedro Saraiva (em frente ao MPDFT) - Centro",
+  "lat": -15.8178794,
+  "lng": -48.1006071,
+  "horario": "seg–sex 09:00–18:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/ceilandia/"
+ },
+ {
+  "id": "formosa",
+  "nome": "Fonte de Vida Formosa (GO)",
+  "grupo": "fdv",
+  "end": "Bairro Formosinha, Av. 6 Nº 911 (próximo à Hidrofer)",
+  "lat": -15.5443541,
+  "lng": -47.3303027,
+  "horario": "seg–sex 08:00–18:00 · sáb 08:00–13:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/formosa-go/"
+ },
+ {
+  "id": "guara",
+  "nome": "Fonte de Vida Guará I e II",
+  "grupo": "fdv",
+  "end": "Guará II QE 40 Rua 05 Lote 3 Loja 01 Polo de Modas - Guará",
+  "lat": -15.8469292,
+  "lng": -47.9790659,
+  "horario": "seg–sex 09:00–18:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/guara/"
+ },
+ {
+  "id": "jardim-botanico",
+  "nome": "Fonte de Vida Jardim Botânico",
+  "grupo": "fdv",
+  "end": "Quadra 07 SHJB III, Bloco J Loja 08 (ao lado do CCAA e do Colégio Objetivo) - Jardim Botânico",
+  "lat": -15.8863292,
+  "lng": -47.8077463,
+  "horario": "seg–sex 09:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/jardim-botanico/"
+ },
+ {
+  "id": "planaltina-df",
+  "nome": "Fonte de Vida Planaltina (DF)",
+  "grupo": "fdv",
+  "end": "St. Res. Leste, Buritis I, Quadra 2 (ao lado da Mil Delícias) - Planaltina",
+  "lat": -15.6162831,
+  "lng": -47.6478105,
+  "horario": "seg–sex 10:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/planaltina/"
+ },
+ {
+  "id": "planaltina-go",
+  "nome": "Fonte de Vida Planaltina (GO)",
+  "grupo": "fdv",
+  "end": "Quadra Q 1 MC Lote 06 Loja 02, Setor Sul (ao lado do Retalhão Elias)",
+  "lat": -15.4564962,
+  "lng": -47.6140264,
+  "horario": "seg–sex 10:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/planaltina-go/"
+ },
+ {
+  "id": "samambaia",
+  "nome": "Fonte de Vida Samambaia",
+  "grupo": "fdv",
+  "end": "QN 204, Conjunto 2, Loja 1 (em frente à Escola CEF 404) - Samambaia Norte",
+  "lat": -15.8677519,
+  "lng": -48.0836991,
+  "horario": "seg–sex 09:00–18:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/samambaia/"
+ },
+ {
+  "id": "santa-maria",
+  "nome": "Fonte de Vida Santa Maria",
+  "grupo": "fdv",
+  "end": "Av. Alagados, CL 117, Lote H, Loja 03 (em frente ao Supermercado Então) - Santa Maria",
+  "lat": -16.0040268,
+  "lng": -47.9905172,
+  "horario": "seg–sex 09:00–19:00 · sáb 10:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/santa-maria/"
+ },
+ {
+  "id": "sobradinho",
+  "nome": "Fonte de Vida Sobradinho",
+  "grupo": "fdv",
+  "end": "Quadra 10/11, CL 11, Loja 01 - Sobradinho",
+  "lat": -15.6422465,
+  "lng": -47.7930581,
+  "horario": "seg–sex 08:00–19:00 · sáb 08:00–17:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/sobradinho/"
+ },
+ {
+  "id": "valparaiso",
+  "nome": "Fonte de Vida Valparaíso (GO)",
+  "grupo": "fdv",
+  "end": "Rua 02, Q. 03, 20 - Loja 02 - Parque Rio Branco (ao lado da Câmara Municipal)",
+  "lat": -16.0770626,
+  "lng": -47.9885936,
+  "horario": "seg–sex 09:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/valparaiso-go/"
+ },
+ {
+  "id": "taguatinga",
+  "nome": "Fonte de Vida Taguatinga",
+  "grupo": "fdv",
+  "end": "CSB QD 7 (em frente à Academia Corpo e Saúde) - Taguatinga Sul",
+  "lat": -15.8392022,
+  "lng": -48.0524419,
+  "horario": "seg–sex 08:00–19:00 · sáb 09:00–17:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/taguatinga/"
+ },
+ {
+  "id": "vicente-pires",
+  "nome": "Fonte de Vida Vicente Pires",
+  "grupo": "fdv",
+  "end": "Rua 5 (próx. à academia Corpo e Saúde), Condomínio Bem-Te-Vi - Vicente Pires",
+  "lat": -15.7986448,
+  "lng": -48.0163173,
+  "horario": "seg–sex 10:00–19:00 · sáb 09:00–15:00 · dom fechado",
+  "venda": [
+   "presencial",
+   "delivery"
+  ],
+  "link": "https://fontedevidaonline.com.br/vicente-pires/"
+ },
+ {
+  "id": "viva-mercado",
+  "nome": "Viva Mercado",
+  "grupo": "proprio",
+  "end": "Av. Comercial, Quadra 501, Lote 4, Loja 3 - Itapoã Parque",
+  "lat": -15.7359131,
+  "lng": -47.780574,
+  "horario": "seg–sáb 06:00–22:00 · dom 07:00–22:00",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "instituto-sao-jose",
+  "nome": "Instituto São José (restaurante MRM)",
+  "grupo": "proprio",
+  "end": "Quadra 4, Área Especial 1 - Sobradinho",
+  "lat": -15.6544838,
+  "lng": -47.7972221,
+  "horario": "seg–sex 07:00–18:00 · sáb e dom fechado",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "naasser",
+  "nome": "Naasser Mendes Fisioterapia",
+  "grupo": "proprio",
+  "end": "QMS 46, Casa 09 - Setor de Mansões de Sobradinho",
+  "lat": -15.6311682,
+  "lng": -47.8249129,
+  "horario": "seg, qua e sex 06:30–12:00",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "palace",
+  "nome": "Palace Sorveteria",
+  "grupo": "proprio",
+  "end": "Quadra 14, Conjunto A/B, CL 17 - Sobradinho",
+  "lat": -15.6488822,
+  "lng": -47.779589,
+  "horario": "todos os dias 08:00–19:00",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "banca-express",
+  "nome": "Banca Express",
+  "grupo": "proprio",
+  "end": "St. Comercial Central, Quadra Central (ao lado do Boticário) - Sobradinho",
+  "lat": -15.6501079,
+  "lng": -47.7912443,
+  "horario": "seg–sex 07:00–19:00 · sáb 07:00–18:00 · dom fechado",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "crossfit-cla",
+  "nome": "CrossFit Clã",
+  "grupo": "proprio",
+  "end": "SES Quadra 12 Lote 16 - Sobradinho",
+  "lat": -15.6593813,
+  "lng": -47.7883964,
+  "horario": "seg–sex 06:00–21:30 · sáb 08:00–12:00 · dom 09:00–11:00",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "wn-copiadora",
+  "nome": "WN Copiadora",
+  "grupo": "proprio",
+  "end": "Quadra 6, CL 19, Loja 2 - Sobradinho",
+  "lat": -15.6531641,
+  "lng": -47.7970292,
+  "horario": "seg–sex 08:00–17:50 · sáb 09:00–12:50 · dom fechado",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "intercross",
+  "nome": "InterCross",
+  "grupo": "proprio",
+  "end": "Quadra 11, Conjunto D, Lote 2A - Arapoanga",
+  "lat": -15.6399287,
+  "lng": -47.6482215,
+  "horario": "seg–sex 07:00–21:00 · sáb 07:00–11:00 · dom fechado",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "banca-central",
+  "nome": "Banca Central (Guimarães)",
+  "grupo": "proprio",
+  "end": "Área Especial 09, St. Comercial Central, Quadra Central, Conjunto B - Sobradinho",
+  "lat": -15.6515217,
+  "lng": -47.7924371,
+  "horario": "todos os dias 06:30–20:00",
+  "venda": [
+   "presencial"
+  ]
+ },
+ {
+  "id": "quiosque-senado",
+  "nome": "Quiosque Senado Federal",
+  "grupo": "proprio",
+  "end": "Esplanada dos Ministérios, nas imediações do Senado Federal - Zona Cívico-Administrativa",
+  "lat": -15.796373,
+  "lng": -47.864967,
+  "horario": "seg–sex 08:00–18:00 · sáb e dom fechado",
+  "venda": [
+   "presencial"
+  ]
+ }
+];
+const LOGO_SVG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"81 225 647 145\">\n<path fill-rule=\"nonzero\" fill=\"rgb(29.957581%, 16.127014%, 52.632141%)\" fill-opacity=\"1\" d=\"M 670.867188 340.734375 C 659.320312 340.734375 650.066406 337.425781 643.367188 330.902344 C 635.972656 323.78125 632.226562 313.957031 632.226562 301.703125 C 632.226562 289.4375 635.753906 279.644531 642.71875 272.59375 C 649.675781 265.542969 658.957031 261.972656 670.308594 261.972656 C 681.644531 261.972656 690.933594 265.695312 697.917969 273.03125 C 704.863281 280.386719 708.386719 290.128906 708.386719 301.984375 C 708.386719 313.835938 704.996094 323.359375 698.308594 330.296875 C 691.632812 337.222656 682.398438 340.734375 670.867188 340.734375 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 669.816406 287.59375 C 668.839844 287.59375 667.953125 287.960938 667.261719 288.65625 L 666.855469 289.0625 L 666.90625 289.636719 C 667.324219 294.210938 667.535156 297.929688 667.535156 300.6875 L 667.535156 313.476562 L 667.890625 313.835938 C 668.453125 314.402344 669.289062 314.691406 670.375 314.691406 C 671.863281 314.691406 672.640625 313.960938 673.03125 313.347656 C 673.496094 312.617188 673.710938 311.558594 673.710938 310.023438 L 673.710938 299.984375 C 673.710938 295.347656 673.515625 292.320312 673.109375 290.730469 C 672.417969 288.003906 670.75 287.59375 669.816406 287.59375 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(66.200256%, 84.916687%, 12.435913%)\" fill-opacity=\"1\" d=\"M 678.324219 252.476562 L 679.835938 258.757812 C 686.28125 259.792969 692.503906 262.453125 697.839844 266.710938 C 702.496094 262.457031 704.757812 255.871094 703.179688 249.308594 L 698.351562 229.25 L 691.53125 230.890625 C 681.925781 233.203125 676.011719 242.867188 678.324219 252.476562 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(66.200256%, 84.916687%, 12.435913%)\" fill-opacity=\"1\" d=\"M 701.808594 270.335938 C 705.859375 274.601562 708.746094 279.558594 710.488281 284.800781 C 715.292969 282.976562 719.363281 279.25 721.445312 274.109375 L 723.132812 269.953125 C 723.394531 269.308594 723.082031 268.570312 722.433594 268.308594 L 718.28125 266.621094 C 712.042969 264.09375 705.261719 265.097656 700.121094 268.675781 C 700.695312 269.210938 701.257812 269.761719 701.808594 270.335938 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 125.007812 340.734375 C 113.246094 340.734375 103.753906 337.070312 96.800781 329.84375 C 89.832031 322.601562 86.296875 312.722656 86.296875 300.476562 C 86.296875 288.261719 90.292969 278.484375 98.171875 271.414062 C 105.207031 265.101562 114.144531 261.902344 124.730469 261.902344 C 134.148438 261.902344 142.046875 264.242188 148.210938 268.855469 C 154.351562 273.445312 157.335938 279.519531 157.335938 287.417969 C 157.335938 292.765625 155.671875 297.164062 152.390625 300.488281 C 149.066406 303.859375 144.792969 305.496094 139.332031 305.496094 C 134.960938 305.496094 131.285156 304.324219 128.414062 302.007812 C 125.527344 299.6875 123.871094 296.742188 123.347656 293.003906 L 123.199219 291.945312 L 122.132812 291.945312 C 118.234375 291.945312 117.816406 294.375 117.816406 295.421875 C 117.816406 299.199219 119.660156 302.679688 123.304688 305.765625 C 127.386719 309.308594 132.535156 311.113281 138.59375 311.113281 C 144.054688 311.113281 148.738281 310.015625 152.535156 307.855469 C 154.324219 311.046875 155.230469 314.886719 155.230469 319.289062 C 155.230469 324.945312 152.851562 329.664062 147.953125 333.714844 C 142.3125 338.371094 134.59375 340.734375 125.007812 340.734375 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 199.277344 287.59375 C 198.300781 287.59375 197.417969 287.960938 196.726562 288.65625 L 196.320312 289.0625 L 196.371094 289.636719 C 196.785156 294.207031 196.996094 297.921875 196.996094 300.6875 L 196.996094 313.476562 L 197.351562 313.835938 C 197.917969 314.402344 198.753906 314.691406 199.839844 314.691406 C 201.328125 314.691406 202.101562 313.960938 202.492188 313.347656 C 202.957031 312.617188 203.175781 311.558594 203.175781 310.023438 L 203.175781 299.984375 C 203.175781 295.347656 202.980469 292.320312 202.574219 290.730469 C 201.878906 288 200.210938 287.59375 199.277344 287.59375 M 200.332031 340.734375 C 188.789062 340.734375 179.535156 337.425781 172.828125 330.902344 C 165.433594 323.78125 161.691406 313.957031 161.691406 301.703125 C 161.691406 289.4375 165.21875 279.644531 172.179688 272.59375 C 179.136719 265.542969 188.421875 261.972656 199.769531 261.972656 C 211.109375 261.972656 220.398438 265.691406 227.378906 273.03125 C 234.328125 280.386719 237.851562 290.128906 237.851562 301.984375 C 237.851562 313.835938 234.460938 323.363281 227.773438 330.296875 C 221.097656 337.222656 211.863281 340.734375 200.332031 340.734375 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 303.066406 339.820312 C 297.535156 339.820312 293.007812 338.25 289.609375 335.15625 C 285.632812 331.617188 283.621094 326.117188 283.621094 318.796875 C 283.621094 315.578125 283.773438 312.714844 284.070312 310.277344 C 284.375 307.765625 284.585938 305.96875 284.703125 304.890625 C 284.816406 303.832031 284.945312 302.84375 285.085938 301.921875 C 285.234375 300.917969 285.308594 299.503906 285.308594 297.597656 C 285.308594 295.519531 285.007812 294.023438 284.386719 293.019531 C 283.667969 291.859375 282.601562 291.242188 281.304688 291.242188 C 280.226562 291.242188 279.253906 291.488281 278.414062 291.96875 L 277.738281 292.351562 L 278.699219 304.417969 C 277.867188 309.148438 277.445312 314.222656 277.445312 319.5 C 277.445312 324.640625 278.550781 329.421875 280.742188 333.726562 C 276.453125 337.769531 270.472656 339.820312 262.949219 339.820312 C 258.503906 339.820312 254.613281 338.644531 251.382812 336.328125 C 247.660156 333.734375 245.855469 330.414062 245.855469 326.167969 L 245.855469 291.800781 L 245.628906 291.480469 C 243.03125 287.828125 241.714844 283.238281 241.714844 277.835938 C 241.714844 272.671875 242.921875 268.117188 245.296875 264.289062 L 257.125 264.289062 C 259.71875 264.289062 261.933594 265.109375 263.855469 266.789062 C 262.136719 268.582031 261.296875 270.148438 261.296875 271.554688 C 261.296875 273.6875 262.675781 274.957031 264.984375 274.957031 L 265.691406 274.957031 L 266.046875 274.34375 C 267.984375 271 271.003906 268.179688 275.019531 265.960938 C 279.050781 263.734375 283.703125 262.605469 288.851562 262.605469 C 296.628906 262.605469 303.007812 264.523438 307.816406 268.308594 C 313.839844 273.050781 316.894531 280.566406 316.894531 290.648438 L 316.6875 305.019531 C 316.6875 308.539062 317.085938 311.417969 317.882812 313.601562 C 318.652344 315.722656 319.96875 317.441406 321.800781 318.726562 C 321.804688 318.898438 321.808594 320.621094 321.808594 320.621094 C 321.808594 326.703125 320.058594 331.472656 316.605469 334.792969 C 313.140625 338.128906 308.585938 339.820312 303.066406 339.820312 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 362.839844 285.699219 C 360.972656 285.699219 359.855469 286.945312 359.855469 289.03125 L 359.855469 296.816406 L 360.273438 297.183594 C 360.875 297.714844 361.714844 297.984375 362.769531 297.984375 C 363.984375 297.984375 364.921875 297.445312 365.414062 296.460938 C 365.789062 295.707031 365.964844 294.554688 365.964844 292.820312 L 365.964844 289.453125 C 365.964844 285.96875 363.574219 285.699219 362.839844 285.699219 M 361.820312 365.304688 C 350.539062 365.304688 341.730469 363.292969 335.640625 359.324219 C 330.109375 355.78125 327.425781 351.347656 327.425781 345.753906 C 327.425781 343.664062 327.921875 341.617188 328.90625 339.671875 C 329.683594 338.136719 330.546875 336.988281 331.472656 336.253906 C 333.910156 338.0625 337.300781 339.554688 341.570312 340.691406 C 346.210938 341.929688 351.054688 342.558594 355.960938 342.558594 C 360.933594 342.558594 364.082031 342.359375 365.582031 341.953125 C 368.175781 341.25 368.5625 339.679688 368.5625 338.804688 C 368.5625 338.113281 368.359375 337.429688 367.964844 336.769531 L 367.511719 336.007812 L 366.648438 336.199219 C 364.402344 336.691406 361.542969 336.941406 358.136719 336.941406 C 349.339844 336.941406 342.367188 335.6875 337.414062 333.210938 C 331.542969 330.316406 328.6875 326.109375 328.6875 320.339844 C 328.6875 318.101562 329.144531 315.996094 330.046875 314.09375 C 330.921875 312.234375 332.171875 310.890625 333.867188 309.980469 L 335.746094 308.972656 L 333.933594 307.851562 C 331.550781 306.382812 329.488281 304.101562 327.796875 301.070312 C 326.105469 298.039062 325.25 294.226562 325.25 289.734375 C 325.25 281.074219 328.398438 274.433594 334.878906 269.4375 C 341.367188 264.4375 349.949219 261.902344 360.382812 261.902344 C 365.410156 261.902344 370.324219 262.75 374.988281 264.425781 L 376.632812 265.015625 L 376.632812 259.21875 C 379.152344 258.390625 382.425781 257.972656 386.390625 257.972656 C 390.695312 257.972656 393.976562 258.683594 396.148438 260.089844 C 398.699219 261.738281 399.9375 264.636719 399.9375 268.957031 C 399.9375 271.429688 399.6875 273.421875 399.195312 274.882812 C 398.6875 276.386719 397.933594 277.980469 396.953125 279.628906 L 396.644531 280.148438 L 396.863281 280.707031 C 398.019531 283.640625 398.605469 287.363281 398.605469 291.769531 C 398.605469 299.726562 395.878906 305.710938 390.269531 310.070312 C 384.644531 314.4375 376.929688 316.65625 367.332031 316.65625 C 364.4375 316.65625 361.941406 316.449219 359.921875 316.046875 L 358.859375 315.835938 L 358.515625 316.863281 C 358.335938 317.40625 358.242188 317.9375 358.242188 318.445312 C 358.242188 319.386719 358.652344 321.058594 361.398438 321.714844 C 362.957031 322.082031 364.953125 322.273438 367.332031 322.273438 C 374.582031 322.273438 380.886719 321.207031 386.085938 319.109375 C 390.679688 320.390625 394.175781 322.988281 396.761719 327.039062 C 398.917969 330.425781 400.007812 334.480469 400.007812 339.085938 C 400.007812 347.375 396.585938 353.652344 389.542969 358.273438 C 382.429688 362.9375 373.101562 365.304688 361.820312 365.304688 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 443.496094 288.015625 C 440.410156 288.015625 438.457031 289.8125 438 293.074219 L 437.886719 293.875 L 438.578125 294.296875 C 440.070312 295.203125 441.800781 295.667969 443.707031 295.667969 C 447.984375 295.667969 448.449219 292.941406 448.449219 291.769531 C 448.449219 290.367188 447.804688 288.015625 443.496094 288.015625 M 444.621094 340.734375 C 432.042969 340.734375 422.011719 337.210938 414.796875 330.265625 C 407.40625 323.28125 403.660156 313.554688 403.660156 301.351562 C 403.660156 289.152344 407.523438 279.359375 415.132812 272.242188 C 422.167969 265.613281 431.214844 262.25 442.023438 262.25 C 452.835938 262.25 461.617188 265.25 468.117188 271.164062 C 474.582031 277.046875 477.859375 284.382812 477.859375 292.964844 C 477.859375 300.621094 475.292969 306.222656 470.007812 310.082031 C 465.089844 313.75 458.253906 315.605469 449.675781 315.605469 C 443.289062 315.605469 437.832031 314.269531 433.460938 311.636719 L 432.753906 311.210938 L 432.089844 311.707031 C 431.390625 312.230469 431.039062 313.082031 431.039062 314.234375 C 431.039062 316.929688 434.691406 318.398438 437.441406 319.265625 C 441.222656 320.558594 445.59375 321.21875 450.414062 321.21875 C 455.21875 321.21875 459.664062 320.597656 463.621094 319.375 C 467.109375 318.296875 470.042969 317.015625 472.359375 315.5625 C 472.902344 316.3125 473.527344 317.578125 474.070312 319.699219 C 474.722656 322.234375 475.050781 324.566406 475.050781 326.625 C 475.050781 328.523438 474.882812 330.242188 474.546875 331.734375 C 471.125 334.578125 467.585938 336.632812 464.019531 337.851562 C 458.726562 339.765625 452.207031 340.734375 444.621094 340.734375 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 504.429688 339.820312 C 498.558594 339.820312 493.859375 338.183594 490.464844 334.960938 C 486.386719 331.105469 484.320312 325.125 484.320312 317.183594 L 484.320312 244.945312 C 488.882812 242.316406 494.144531 240.984375 499.972656 240.984375 C 505.980469 240.984375 510.480469 242.242188 513.347656 244.71875 C 516.203125 247.191406 517.589844 250.570312 517.589844 255.058594 L 517.589844 304.40625 C 517.589844 311.449219 519.3125 316.261719 522.707031 318.722656 C 522.714844 318.894531 522.714844 320.621094 522.714844 320.621094 C 522.714844 326.949219 521.121094 331.785156 517.976562 334.992188 C 514.839844 338.195312 510.28125 339.820312 504.429688 339.820312 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 548.757812 339.820312 C 543.308594 339.820312 538.777344 338.269531 535.28125 335.210938 C 530.859375 331.3125 528.613281 325.480469 528.613281 317.882812 L 528.613281 272.90625 C 529.222656 272.515625 529.875 272.1875 530.558594 271.929688 C 531.578125 271.539062 532.664062 271.046875 533.777344 270.46875 L 535.890625 269.363281 L 533.769531 268.28125 C 531.964844 267.359375 530.28125 265.699219 528.769531 263.34375 C 527.265625 261.007812 526.507812 258.21875 526.507812 255.058594 C 526.507812 249.457031 528.289062 245.019531 531.957031 241.480469 C 535.636719 237.933594 540.03125 236.207031 545.390625 236.207031 C 550.738281 236.207031 555.089844 237.964844 558.699219 241.570312 C 562.308594 245.179688 564.0625 249.589844 564.0625 255.058594 C 564.0625 259.375 562.691406 263.207031 559.992188 266.449219 C 557.285156 269.707031 553.949219 271.773438 550.082031 272.597656 L 549.109375 272.804688 L 549.109375 273.800781 C 549.109375 277.417969 551.609375 277.695312 552.375 277.695312 C 554.769531 277.695312 557.210938 276.855469 559.640625 275.195312 C 560.898438 276.1875 561.546875 276.761719 561.886719 277.089844 L 561.886719 304.40625 C 561.886719 311.449219 563.605469 316.261719 567.003906 318.722656 C 567.007812 318.894531 567.007812 320.621094 567.007812 320.621094 C 567.007812 327.113281 565.253906 332.027344 561.789062 335.230469 C 558.566406 338.28125 554.1875 339.820312 548.757812 339.820312 \"/>\n<path fill-rule=\"nonzero\" fill=\"rgb(89.019775%, 10.191345%, 59.223938%)\" fill-opacity=\"1\" d=\"M 602.601562 339.820312 C 595.261719 339.820312 589.355469 337.769531 585.050781 333.730469 C 580.765625 329.710938 578.59375 323.644531 578.59375 315.707031 L 578.59375 296.648438 L 581.714844 296.648438 C 585.992188 296.648438 586.457031 294.167969 586.457031 293.101562 C 586.457031 292.8125 586.398438 292.449219 586.277344 291.964844 L 586.046875 291.035156 L 570.28125 291.035156 C 569.460938 288.109375 569.046875 284.832031 569.046875 281.277344 C 569.046875 277.597656 569.304688 274.539062 569.816406 272.179688 C 572.457031 270.488281 576.039062 267.96875 580.480469 264.679688 L 580.757812 264.476562 L 580.886719 264.160156 C 582.207031 260.953125 583.945312 255.816406 586.050781 248.886719 C 586.261719 248.1875 586.496094 247.503906 586.761719 246.835938 C 590.15625 246.027344 594.050781 245.617188 598.355469 245.617188 C 602.589844 245.617188 606.820312 246.035156 610.953125 246.863281 L 610.953125 264.289062 L 623.652344 264.289062 C 625.988281 268.070312 627.171875 272.542969 627.171875 277.589844 C 627.171875 279.992188 626.828125 282.511719 626.15625 285.070312 C 625.5625 287.335938 624.726562 289.316406 623.671875 290.960938 L 613.058594 290.960938 L 613.058594 302.792969 C 613.058594 311.234375 617.8125 313.007812 621.800781 313.007812 L 623.875 313.007812 C 624.664062 316.0625 625.0625 318.761719 625.0625 321.042969 C 625.0625 327.179688 623.21875 331.726562 619.425781 334.953125 C 615.625 338.183594 609.964844 339.820312 602.601562 339.820312 \"/>\n</svg>\n";
+const GELITO = 'data:image/jpeg;base64,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';
+const $ = id => document.getElementById(id);
+const LIMITE = -18, DIST_OK = 300;
+let pos = null, fotos = {}, logoPng = null, assinou = false;
+
+// logo
+const logoUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(LOGO_SVG)));
+$('logo').src = logoUrl; const gelPng = GELITO; $('gelito').src = GELITO;
+(() => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = 900; c.height = Math.round(900*145.0/647.0); c.getContext('2d').drawImage(im,0,0,c.width,c.height); logoPng = c.toDataURL('image/png'); }; im.src = logoUrl; })();
+
+// data/hora
+const fmtData = d => d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+const tick = () => $('agora').textContent = fmtData(new Date());
+tick(); setInterval(tick, 20000);
+
+// lojas
+const sel = $('loja');
+sel.innerHTML = '<option value="">Selecione a loja…</option>' +
+  '<optgroup label="Fonte de Vida">' + PONTOS.filter(p=>p.grupo==='fdv').map(p=>`<option value="${p.id}">${p.nome}</option>`).join('') + '</optgroup>' +
+  '<optgroup label="Pontos próprios">' + PONTOS.filter(p=>p.grupo!=='fdv').map(p=>`<option value="${p.id}">${p.nome}</option>`).join('') + '</optgroup>' +
+  '<option value="__nova">➕ NOVA LOJA (digitar nome)</option>';
+const loja = () => { if (sel.value === '__nova') { const n = $('novaNome').value.trim(); return n ? {id:'nova-'+n.toLowerCase(), nome:n, grupo:'nova', end:$('novaEnd').value.trim() || 'Não informado'} : null; }
+  return PONTOS.find(p => p.id === sel.value); };
+function dist(a,b,c,d){const R=6371000,r=x=>x*Math.PI/180;const h=Math.sin(r(c-a)/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(r(d-b)/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+const fmtDist = m => m < 1000 ? Math.round(m) + ' m' : (m/1000).toFixed(1).replace('.',',') + ' km';
+function distLoja(){ const l = loja(); return (l && pos) ? dist(pos.lat,pos.lng,l.lat,l.lng) : null; }
+function atualizaLoja(){
+  $('novaBox').style.display = sel.value === '__nova' ? 'block' : 'none';
+  const l = sel.value === '__nova' ? null : loja(); $('endereco').textContent = l ? l.end : '';
+}
+sel.onchange = atualizaLoja;
+
+
+// inspetor lembrado
+try { $('inspetor').value = localStorage.getItem('cg_inspetor') || ''; } catch(e){}
+
+// checklist
+const BRR = ['Bom','Regular','Ruim'];
+const ITENS = [
+  {k:'funcionamento', n:'Funcionamento', o:['Funcionando','Oscilando','Com defeito']},
+  {k:'visor', n:'Visor do termostato', o:['Ligado','Desligado']},
+  {k:'temperatura', n:'Temperatura em -18 °C?', o:['Sim','Não']},
+  {k:'conservacao', n:'Conservação do freezer', o:BRR},
+  {k:'vedacao', n:'Vedação da tampa', o:BRR},
+  {k:'adesivacao', n:'Conservação da adesivação', o:BRR},
+  {k:'cestinha', n:'Cestinha', o:['Com','Sem']},
+  {k:'plaquinha', n:'Plaquinha de preço', o:['Com','Sem']},
+  {k:'exclusivo', n:'Só produtos Congelito no freezer?', o:['Sim','Não']},
+  {k:'tomada', n:'Ligação da tomada', o:['Direta','Com T','Em régua']},
+  {k:'validade', n:'Produtos dentro da validade?', o:['Sim','Não']},
+];
+const RUINS = ['Ruim','Desligado','Não','Sem','Com defeito'];
+const AVISO = ['Regular','Oscilando','Com T','Em régua'];
+const classe = v => RUINS.includes(v) ? 'ruim' : AVISO.includes(v) ? 'reg' : 'bom';
+$('lista').innerHTML = ITENS.map(it => `<div class="item"><span class="nome">${it.n}</span><div class="ops">` +
+  it.o.map(v => `<label><input type="radio" name="${it.k}" value="${v}" class="${classe(v)}"><span>${v}</span></label>`).join('') + '</div></div>').join('');
+
+// fotos (reduz para ~1200px)
+document.querySelectorAll('.foto input').forEach(inp => inp.onchange = () => {
+  const f = inp.files[0]; if (!f) return; const k = inp.dataset.k; const rd = new FileReader();
+  rd.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(1, 1200/Math.max(im.width,im.height));
+      const c = document.createElement('canvas'); c.width = im.width*s; c.height = im.height*s; c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      fotos[k] = {url:c.toDataURL('image/jpeg',0.75), w:c.width, h:c.height};
+      inp.parentElement.querySelector('span').innerHTML = `<img src="${fotos[k].url}"><br>Toque para refazer`; };
+    im.src = rd.result; };
+  rd.readAsDataURL(f);
+});
+
+// assinatura
+const cv = $('assin'), cx = cv.getContext('2d');
+function ajustaCanvas(){ const r = cv.getBoundingClientRect(), d = window.devicePixelRatio||1; const img = assinou ? cv.toDataURL() : null;
+  cv.width = r.width*d; cv.height = r.height*d; cx.setTransform(d,0,0,d,0,0); cx.lineWidth = 2.6; cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#1a1240';
+  if (img) { const i = new Image(); i.onload = () => cx.drawImage(i,0,0,r.width,r.height); i.src = img; } }
+ajustaCanvas(); window.addEventListener('resize', ajustaCanvas);
+let des = false;
+const pt = e => { const r = cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; };
+cv.onpointerdown = e => { des = true; cv.setPointerCapture(e.pointerId); const [x,y] = pt(e); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+0.1,y+0.1); cx.stroke(); assinou = true; };
+cv.onpointermove = e => { if (!des) return; const [x,y] = pt(e); cx.lineTo(x,y); cx.stroke(); };
+cv.onpointerup = cv.onpointercancel = () => des = false;
+function recortaAssin(){
+  const W = cv.width, H = cv.height, px = cx.getImageData(0,0,W,H).data; let x0=W, y0=H, x1=-1, y1=-1;
+  for (let yy=0; yy<H; yy++) for (let xx=0; xx<W; xx++) if (px[(yy*W+xx)*4+3] > 20) { if(xx<x0)x0=xx; if(xx>x1)x1=xx; if(yy<y0)y0=yy; if(yy>y1)y1=yy; }
+  if (x1 < 0) return {url: cv.toDataURL('image/png'), w: W, h: H};
+  const m = 6; x0=Math.max(0,x0-m); y0=Math.max(0,y0-m); x1=Math.min(W-1,x1+m); y1=Math.min(H-1,y1+m);
+  const c = document.createElement('canvas'); c.width = x1-x0+1; c.height = y1-y0+1;
+  c.getContext('2d').drawImage(cv, x0,y0,c.width,c.height, 0,0,c.width,c.height);
+  return {url: c.toDataURL('image/png'), w: c.width, h: c.height};
+}
+$('limpar').onclick = () => { cx.clearRect(0,0,cv.width,cv.height); assinou = false; };
+
+// histórico
+const mesAtual = () => { const d = new Date(); return String(d.getMonth()+1).padStart(2,'0') + '-' + d.getFullYear(); };
+function lerHist(){ try { return JSON.parse(localStorage.getItem('cg_hist')||'[]'); } catch(e){ return []; } }
+function mostraHist(){ const h = lerHist().filter(x => x.mes === mesAtual()); const feitos = {}; h.forEach(x => feitos[x.id] = x);
+  $('prog').innerHTML = `${Object.keys(feitos).length} de ${PONTOS.length}<br>lojas em ${mesAtual().replace('-','/')}`;
+  $('histLista').innerHTML = PONTOS.map(p => { const f = feitos[p.id]; return `<li class="${f?'feito'+(f.ok?'':' ruim'):''}">${f?'✔ ':''}${p.nome}${f?' · '+f.data:''}</li>`; }).join(''); }
+mostraHist();
+document.querySelector('.abas a[data-m=vistoria]').classList.add('on');
+
+// coleta
+const radio = n => (document.querySelector(`input[name=${n}]:checked`)||{}).value || '';
+const ruimR = n => { const r = document.querySelector(`input[name=${n}]:checked`); return r && r.classList.contains('ruim'); };
+function coleta(){
+  const d = { loja: loja(), inspetor: $('inspetor').value.trim(), qtd: $('qtd').value.trim(), obs: $('obs').value.trim(), resp: $('respNome').value.trim(), data: new Date() };
+  ITENS.forEach(it => d[it.k] = radio(it.k)); return d;
+}
+function valida(d){ const e = [];
+  if (!d.loja) e.push(sel.value==='__nova' ? 'Nome da nova loja' : 'Selecione a loja'); if (!d.inspetor) e.push('Nome de quem inspeciona');
+  ITENS.forEach(it => { if (!d[it.k]) e.push(it.n); });
+  if (d.qtd === '') e.push('Quantidade de produtos no freezer');
+  if (!fotos.fora || !fotos.dentro) e.push('Tire as 2 fotos'); if (!d.resp) e.push('Nome do responsável da loja');
+  if (!assinou) e.push('Assinatura do responsável'); if (!$('ciencia').checked) e.push('Marque a declaração de ciência');
+  return e; }
+
+// PDF
+function gerarPdf(d){
+  const { jsPDF } = window.jspdf; const doc = new jsPDF({unit:'mm', format:'a4'}); const W = 210, M = 14; let y = 0;
+  doc.setFillColor(63,184,195); doc.rect(0,0,W,4,'F'); doc.setFillColor(169,217,32); doc.rect(0,4,W,1.5,'F');
+  if (gelPng) doc.addImage(gelPng,'JPEG',M,8,20,20); if (logoPng) doc.addImage(logoPng,'PNG',M+23,12,45,45*145.0/647.0);
+  doc.setTextColor(77,41,134); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text('RELATÓRIO DE INSPEÇÃO DE FREEZER', W-M, 15, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90); doc.text('Congelito Food Ltda · CNPJ 56.878.797/0001-89', W-M, 21, {align:'right'});
+  doc.text('Emitido em ' + fmtData(d.data), W-M, 26, {align:'right'});
+  y = 36;
+  const titulo = t => { doc.setFillColor(244,241,250); doc.rect(M,y,W-2*M,7,'F'); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(77,41,134); doc.text(t, M+2, y+5); y += 10; };
+  const linha = (rot, val, ruim) => { doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90); doc.text(rot, M+2, y);
+    doc.setFont('helvetica','bold'); const cor = ruim==='reg' ? [210,120,0] : ruim==='bom' ? [31,140,80] : ruim ? [214,40,40] : [30,22,48]; doc.setTextColor(...cor); const t = doc.splitTextToSize(String(val), 115); doc.text(t, M+65, y); y += 5.5*t.length; };
+    titulo('1. IDENTIFICAÇÃO');
+  linha('Data e hora', fmtData(d.data)); linha('Loja', d.loja.nome); linha('Tipo de ponto', d.loja.grupo==='fdv'?'Parceiro (rede Fonte de Vida)':d.loja.grupo==='nova'?'Nova loja (ainda não está no site)':'Ponto próprio Congelito'); linha('Endereço', d.loja.end);
+  linha('Responsável pela inspeção', d.inspetor); y += 2;
+  titulo('2. CHECKLIST DO FREEZER');
+  ITENS.forEach(it => linha(it.n, d[it.k], classe(d[it.k])==='ruim' ? true : classe(d[it.k])));
+  linha('Quantidade no freezer', d.qtd + ' unidades'); y += 2;
+  titulo('3. FOTOS');
+  const fw = (W-2*M-6)/2, fh = 40;
+  [['fora','Por fora'],['dentro','Por dentro']].forEach(([k,r],i) => { const f = fotos[k]; const s = Math.min(fw/f.w, fh/f.h); const w = f.w*s, h = f.h*s;
+    const x = M + i*(fw+6) + (fw-w)/2; doc.addImage(f.url,'JPEG',x,y,w,h); doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(90); doc.text(r, M + i*(fw+6) + fw/2, y+fh+4, {align:'center'}); });
+  y += fh + 9;
+  titulo('4. OBSERVAÇÕES'); linha('Observações', d.obs || 'Nenhuma'); y += 2;
+  // assinatura recortada na área desenhada, dentro de caixa fixa
+  const s = recortaAssin(); const BW = 75, BH = 20; const k = Math.min(BW/s.w, BH/s.h); const sw = s.w*k, sh = s.h*k;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); const nomeL = doc.splitTextToSize(d.resp, 120);
+  const precisa = 10 + 5 + BH + 2 + 5 + 4.5*nomeL.length + 6;
+  if (y + precisa > 288) { doc.setFillColor(77,41,134); doc.rect(0,293,W,4,'F'); doc.addPage(); y = 16; }
+  titulo('5. CIÊNCIA DO RESPONSÁVEL DA LOJA');
+  doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(40); doc.text('"Declaro que acompanhei a inspeção e confirmo as informações acima."', M+2, y); y += 5;
+  doc.addImage(s.url,'PNG',(W-sw)/2,y+(BH-sh),sw,sh); y += BH + 2;
+  doc.setDrawColor(120); doc.line(W/2-45,y,W/2+45,y); y += 5;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(30); doc.text(nomeL, W/2, y, {align:'center'}); y += 4.5*nomeL.length;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(90); doc.text('Responsável da loja · assinado em ' + fmtData(d.data), W/2, y, {align:'center'});
+  doc.setFillColor(77,41,134); doc.rect(0,293,W,4,'F');
+  return doc;
+}
+const limpaNome = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'');
+
+$('gerar').onclick = async () => {
+  const d = coleta(); const e = valida(d);
+  if (e.length) { $('erros').innerHTML = 'Falta preencher:<br>• ' + e.join('<br>• '); $('erros').scrollIntoView({behavior:'smooth'}); return; }
+  $('erros').textContent = '';
+  try { localStorage.setItem('cg_inspetor', d.inspetor); } catch(_){}
+  const doc = gerarPdf(d); const nome = `Inspecao_${limpaNome(d.loja.nome.replace(/^Fonte de Vida /,'FdV '))}_${mesAtual()}.pdf`;
+  const blob = doc.output('blob'); const file = new File([blob], nome, {type:'application/pdf'});
+  const ok = !ITENS.some(it => classe(d[it.k])==='ruim');
+  try { const h = lerHist().filter(x => !(x.id===d.loja.id && x.mes===mesAtual())); h.push({id:d.loja.id, mes:mesAtual(), data:d.data.toLocaleDateString('pt-BR'), ok}); localStorage.setItem('cg_hist', JSON.stringify(h)); } catch(_){}
+  mostraHist();
+  if (navigator.canShare && navigator.canShare({files:[file]})) {
+    try { await navigator.share({files:[file], title:nome, text:`Inspeção do freezer Congelito: ${d.loja.nome} (${fmtData(d.data)})`}); return; } catch(err) { if (err.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click();
+  alert('PDF salvo em Downloads (' + nome + '). Anexe no WhatsApp pelo clipe 📎 > Documento.');
+};
+$('zerar').onclick = () => { if (confirm('Apagar TODO o histórico de lojas visitadas deste tablet?')) { try { localStorage.removeItem('cg_hist'); } catch(_){} mostraHist(); } };
+$('nova').onclick = () => { if (confirm('Apagar os dados desta inspeção e começar outra?')) { const i = $('inspetor').value; location.reload(); } };
+</script>
+</body>
+</html>
